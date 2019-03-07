@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**Created by Hao, 6 May.
  *
  * This class defines the structure of piece of similar code between line/lines in two files
@@ -17,6 +19,16 @@ public class SimilarPiece {
         this.file2 = file2;
         this.lines1 = lines1;
         this.lines2 = lines2;
+    }
+
+    @Override
+    public String toString() {
+        return "SimilarPiece{" +
+                "file1=" + file1 +
+                ", file2=" + file2 +
+                ", lines1=" + Arrays.toString(lines1) +
+                ", lines2=" + Arrays.toString(lines2) +
+                '}';
     }
 
     // Test Main
