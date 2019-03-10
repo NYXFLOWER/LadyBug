@@ -4,7 +4,7 @@
 When creating an instance of `SimilaryityDecectionModel`, the detection model start running. 
 
 - The constructor input variable is an `ArrayList<String>`, where its first element is the `[CodePath]`, 
-and others are `[CodeName]`.
+and others are `[CodeName]` corresponding to their index in database.
 
 - `1` will be returned when it is finished successfully, while for other cases it will return `0`.
 
