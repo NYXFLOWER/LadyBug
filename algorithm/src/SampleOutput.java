@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-/**Created by Hao, 7 May.
+/**Created by Hao, 7 March.
  *
  * This class is constructed for testing only!!
  * There are three array lists of piece of similar pairs corresponding to the three similar types.
