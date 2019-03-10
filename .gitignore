@@ -3,3 +3,4 @@
 *.iml
 algorithm/out/
 *.DS_Store
+*.class

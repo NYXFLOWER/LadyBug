@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-/**Created by Hao, 6 May.
+/**Created by Hao, 6 March.
  *
  * This class defines the structure of piece of similar code between line/lines in two files
  * A instance of this class means:

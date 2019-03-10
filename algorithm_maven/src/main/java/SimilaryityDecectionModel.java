@@ -1,10 +1,9 @@
+import com.github.javaparser.ast.CompilationUnit;
 import com.sun.istack.internal.NotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
+import com.github.javaparser.JavaParser;
 
 /**Created by Hao, 27 Feb.
  *
@@ -22,7 +21,10 @@ public class SimilaryityDecectionModel {
         StringBuilder sb = new StringBuilder();
         String path = codeList.get(0);
 
-        System.out.println();
+        File sourceFile = new File(String.join(path, codeList.get(1)));
+
+
+        System.out.println(path);
     }
 
     private void runPythonModel(String command) {
