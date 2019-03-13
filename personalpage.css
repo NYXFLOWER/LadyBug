@@ -1,0 +1,122 @@
+body {
+	background-image: url("the diamond.jpeg");
+	background-size: 100%;
+	background-repeat: no-repeat;
+}
+
+#personalpage_frame_left {
+	width:300px;
+	height:400px;
+	padding:13px;
+
+	position:absolute;
+	left: 30%;
+	top: 40%;
+	margin-left: -100px;
+	margin-top: -100px;
+
+	background-color: rgba(153,204,204,0.65);
+
+	border-radius: 10px;
+	text-align: centre;
+}
+
+#personalpage_frame_right {
+	width:300px;
+	height:400px;
+	padding:13px;
+
+	position:absolute;
+	left: 60%;
+	top: 40%;
+	margin-left: -100px;
+	margin-top: -100px;
+
+	background-color: rgba(255,255,255,0.65);
+
+	border-radius: 10px;
+	text-align: centre;
+}
+
+orm p > *{
+	display: inline-block;
+	vertical-align: middle;
+}
+
+#image_logo {
+	margin-top: 22px;
+}
+
+.label_head2 {
+	font-size: 28px;
+	font-family: Calibri;
+
+	width: 74px;
+	height: 33px;
+	line-height: 28px;
+	text-align: left;
+
+	color: #52527a;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+.label_head1 {
+	font-size: 28px;
+	font-family: Calibri;
+
+	width: 74px;
+	height: 33px;
+	line-height: 28px;
+	text-align: left;
+
+	color: #52527a;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+#btn_upload {
+	font-size: 14px;
+	font-family: arial;
+
+	width: 160px;
+	height: 23px;
+	line-height: 28px;
+	text-align: center;
+
+	color: white;
+	background-color: #52527a;
+	border-radius: 6px;
+	border: 0;
+
+	float: left;
+}
+
+#btn_download {
+	font-size: 14px;
+	font-family: arial;
+
+	width: 80px;
+	height: 23px;
+	line-height: 28px;
+	text-align: center;
+
+	color: white;
+	background-color: #52527a;
+	border-radius: 6px;
+	border: 0;
+
+	float: left;
+}
+
+#upload_control {
+	padding-left: 0px;
+}
+
+#download_control {
+	padding-left: 0px;
+}
