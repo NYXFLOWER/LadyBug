@@ -6,9 +6,14 @@ import java.util.ArrayList;
  * There are two code file in Java, each has a PSVM method */
 
 public class SampleInput {
-    static ArrayList<String> input = new ArrayList<String>() {{
-        add("/Users/nyxfer/Documents/GitHub/ladybug/algorithm/src/");
-        add("SampleOutput");
-        add("SimilarPiece");
-    }};
+
+    static ArrayList<String> input = new ArrayList<String>() {
+
+        {
+            add("/Users/nyxfer/Documents/GitHub/ladybug/algorithm_maven/src/main/java/");
+            add("SampleInput.java");
+            add("SampleOutput.java");
+            add("SimilarPiece.java");
+        }
+    };
 }
