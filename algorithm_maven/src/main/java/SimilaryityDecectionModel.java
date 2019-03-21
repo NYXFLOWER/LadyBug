@@ -1,29 +1,19 @@
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
+import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.stmt.IfStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
-import com.github.javaparser.ast.visitor.Visitable;
-import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import com.github.javaparser.utils.CodeGenerationUtils;
-import com.github.javaparser.utils.SourceRoot;
 
 
 import java.io.*;
-import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.TreeMap;
 
 
 /**
@@ -34,9 +24,10 @@ import java.util.TreeMap;
  */
 
 public class SimilaryityDecectionModel {
-    public ArrayList<SimilarPiece> copyHere = new ArrayList<>();
-    public ArrayList<SimilarPiece> changeName = new ArrayList<>();
-    public ArrayList<SimilarPiece> similarStructure = new ArrayList<>();
+    private ArrayList<SimilarPiece> copyHere = new ArrayList<>();
+    private ArrayList<SimilarPiece> changeName = new ArrayList<>();
+    private ArrayList<SimilarPiece> similarStructure = new ArrayList<>();
+    private ArrayList<CompilationUnit> cuArray = new ArrayList<>();
 
     private static class MethodNamePrinter extends VoidVisitorAdapter<Void> {
         @Override
@@ -54,27 +45,113 @@ public class SimilaryityDecectionModel {
         }
     }
 
-    public SimilaryityDecectionModel(ArrayList<String> codeList) throws FileNotFoundException {
-        /* codeList[0] is the path of code files, and the rests store the name of code files
-        corresponding to their index in database. */
-        StringBuilder sb = new StringBuilder();
-        String path = codeList.get(0);
-        sb.append(path).append(codeList.get(2));
+
+    private static class IntegerLiteralModifier extends ModifierVisitor<Void> {
+        @Override
+        public FieldDeclaration visit(FieldDeclaration fd, Void arg) {
+            super.visit(fd, arg);
+            return fd;
+        }
+    }
 
 
-        // -------------------------------------------------------------- //
-        CompilationUnit cu = StaticJavaParser.parse(new File(sb.toString()));
-//        Statement sss = StaticJavaParser.parseStatement("fff");
+    private void detectCopyNode(int f1, int f2, Node node_base, Node node_compare) {
+        if (node_base.equals(node_compare)) {
+            copyHere.add(new SimilarPiece(f1, f2, getRange(node_base), getRange(node_compare)));
+            return;
+        }
 
-        VoidVisitor<?> methodNameVisitor = new MethodNamePrinter();
-        methodNameVisitor.visit(cu, null);
+        // break if one of node is one-line code
+        if (isOneLine(node_base) | isOneLine(node_compare)) return;
 
-        List<String> methodNames = new ArrayList<>();
-        VoidVisitor<List<String>> methodNameCollector = new MethodNameCollector();
-        methodNameCollector.visit(cu, methodNames);
-        methodNames.forEach(n -> System.out.println("Method Name Collected: " + n));
+        // the case to compare two CID
 
-        System.out.println();
+        if (node_base instanceof ClassOrInterfaceDeclaration
+                && node_compare instanceof ClassOrInterfaceDeclaration) {
+                    for (Node ni: node_base.getChildNodes()) {
+                        for (Node nj: node_compare.getChildNodes()) {
+                            detectCopyClassInterface(f1, f2, ni, nj);
+                        }
+                    }
+            return;
+        }
+
+        // break if one of node is CID
+        if (node_base instanceof ClassOrInterfaceDeclaration
+                || node_compare instanceof ClassOrInterfaceDeclaration) return;
+
+        // case of package, import, comment, whole class and any one-line code
+        for (Node base : node_base.getChildNodes()) {
+            for (Node node : node_compare.getChildNodes()) {
+                detectCopyNode(f1, f2, base, node);
+            }
+        }
+    }
+
+
+    private void detectCopyClassInterface(int i, int j, Node ni, Node nj) {
+
+    }
+
+    private void detectCopy() {
+        CompilationUnit tempi, tempj;
+        for (int i = 0; i < (this.cuArray.size() - 1); i++) {
+            for (int j = i + 1; j < this.cuArray.size(); j++) {
+                tempi = this.cuArray.get(i);
+                tempj = this.cuArray.get(j);
+                detectCopyNode(i, j, tempi, tempj);
+
+            }
+        }
+    }
+
+    /* get the 2-elements index array of begin line and end line of a node */
+    private int[] getRange(Node node) {
+        Range r = node.getRange().get();
+        return new int[]{r.begin.line, r.end.line};
+    }
+
+    /* check if node is one-line code */
+    private boolean isOneLine(Node node) {
+        int[] r = getRange(node);
+        return r[1] - r[0] == 0;
+    }
+
+
+    public SimilaryityDecectionModel(ArrayList<String> codeList) throws IOException {
+        /* :codeList: codeList[0] is the path of code files, and the rests store the name of code
+                      files corresponding to their index in database. */
+
+        // parser all java files and store this.cuArray.
+        Path fatherPath = Paths.get(codeList.get(0));
+        for (int i = 1; i < codeList.size(); i++) {
+            this.cuArray.add(StaticJavaParser.parse(fatherPath.resolve(Paths.get(codeList.get(i)))));
+        }
+
+        detectCopy();
+
+        // read file by file
+
+        // compare the 'import' section
+
+        // compare the class variable declaration
+
+        // compare the class constructor
+
+        // compare the
+
+
+//        VoidVisitor<?> methodNameVisitor = new MethodNamePrinter();
+////        methodNameVisitor.visit(cu, null);
+//
+//
+//        List<String> methodNames = new ArrayList<>();
+//        VoidVisitor<List<String>> methodNameCollector = new MethodNameCollector();
+////        methodNameCollector.visit(cu, methodNames);
+//        methodNames.forEach(n -> System.out.println("Method Name Collected: " + n));
+
+
+//        System.out.println();
 //        List<Node> a = cu.getChildNodes();
 //        System.out.println(a.get(0));
 
@@ -124,7 +201,6 @@ public class SimilaryityDecectionModel {
     }
 
 
-
     private void runPythonModel(String command) {
 
         Runtime run = Runtime.getRuntime();
@@ -149,14 +225,15 @@ public class SimilaryityDecectionModel {
     // testing
     public static void main(String[] args) throws IOException {
         SimilaryityDecectionModel sdm = new SimilaryityDecectionModel(SampleInput.input);
+        System.out.println();
+        sdm.cuArray.get(0).getChildNodes();
+
 
 //        SampleOutput output = new SampleOutput();
 //        System.out.println(output.similarStructure);
 //        System.out.println(output.changeName);
 //        System.out.println(output.copyHere);
 //
-//        SimilarPiece p = output.similarStructure.get(0);
-//        System.out.println(p.lines1[1]);
 
     }
 }
