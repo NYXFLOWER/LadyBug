@@ -1,13 +1,12 @@
 body {
-	background-image: url("the diamond.jpeg");;
+	background-image: url("the diamond.jpeg");
 	background-size: 100%;
 	background-repeat: no-repeat; 
-	back
 }
 
-#login_2_frame {
-	width: 350px;
-	height: 200px;
+#signup_frame {
+	width: 290px;
+	height: 400px;
 	padding: 13px;
 
 	position: absolute;
@@ -22,17 +21,16 @@ body {
 	text-align: centre;
 }
 
-form p > *{
+orm p > *{
 	display: inline-block;
 	vertical-align: middle;
 }
 
 #image_logo {
 	margin-top: 22px;
-	margin-left: 100px;
 }
 
-.label_input {
+.label_input1 {
 	font-size: 14px;
 	font-family: arial;
 
@@ -47,8 +45,8 @@ form p > *{
 	border-bottom-right-radius: 5px;
 }
 
-.text_field {
-	width: 250px;
+.text_field1 {
+	width: 278px;
 	height: 28px;
 	border-top-left-radius: 5px;
 	border-bottom-left-radius: 5px;
@@ -63,7 +61,7 @@ form p > *{
 
 }
 
-#btn_login_2 {
+#btn_signup {
 	font-size: 14px;
 	font-family: arial;
 
@@ -80,20 +78,6 @@ form p > *{
 	float: left;
 }
 
-#create_newuser {
-	font-size: 12px;
-	color: #52527a;
-	text-decoration: underline;
-	position: relative;
-	float: right;
-	top: 5px;
-}
-
-#create_newuser:hover {
-	color: green;
-	text-decoration: underline;
-}
-
-#login_2_control {
-	padding-left: 120px;
+#signup_control {
+	padding-left: 80px;
 }
