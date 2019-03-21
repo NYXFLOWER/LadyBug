@@ -1,10 +1,13 @@
 import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -29,6 +32,23 @@ public class SimilaryityDecectionModel {
     private ArrayList<SimilarPiece> similarStructure = new ArrayList<>();
     private ArrayList<CompilationUnit> cuArray = new ArrayList<>();
 
+
+    /* ************************** constructors ************************ */
+    public SimilaryityDecectionModel(ArrayList<String> codeList) throws IOException {
+        /* :codeList: codeList[0] is the path of code files, and the rests store the name of code
+                      files corresponding to their index in database. */
+
+        // parser all java files and store this.cuArray.
+        Path fatherPath = Paths.get(codeList.get(0));
+        for (int i = 1; i < codeList.size(); i++) {
+            this.cuArray.add(StaticJavaParser.parse(fatherPath.resolve(Paths.get(codeList.get(i)))));
+        }
+
+        detectCopy();
+
+    }
+
+    /* ************************** Visitors ************************ */
     private static class MethodNamePrinter extends VoidVisitorAdapter<Void> {
         @Override
         public void visit(MethodDeclaration md, Void arg) {
@@ -55,30 +75,59 @@ public class SimilaryityDecectionModel {
     }
 
 
+    /* ************* detect the copy and change variable name between normal nodes *********** */
     private void detectCopyNode(int f1, int f2, Node node_base, Node node_compare) {
+        // break if one of node is Modifier or SimpleName
+        if (node_base instanceof Modifier || node_compare instanceof Modifier
+                || node_base instanceof SimpleName || node_compare instanceof SimpleName
+                || node_base instanceof ClassOrInterfaceType || node_compare instanceof ClassOrInterfaceType
+                || node_base instanceof Parameter || node_compare instanceof Parameter
+                || node_base instanceof VoidType || node_compare instanceof VoidType)
+            return;
+
+        // -------------------------- Compare Between Nodes ------------------------------ //
         if (node_base.equals(node_compare)) {
             copyHere.add(new SimilarPiece(f1, f2, getRange(node_base), getRange(node_compare)));
             return;
         }
 
         // break if one of node is one-line code
-        if (isOneLine(node_base) | isOneLine(node_compare)) return;
+        if (isOneLine(node_base) || isOneLine(node_compare)) return;
 
+
+        // --------------------- Class, Interface, Method, Constructor -------------------- //
         // the case to compare two CID
-
         if (node_base instanceof ClassOrInterfaceDeclaration
                 && node_compare instanceof ClassOrInterfaceDeclaration) {
-                    for (Node ni: node_base.getChildNodes()) {
-                        for (Node nj: node_compare.getChildNodes()) {
-                            detectCopyClassInterface(f1, f2, ni, nj);
-                        }
-                    }
+            detectCopyClassInterfaceConstructorMethod(f1, f2, node_base, node_compare);
+            return;
+        }
+
+        // the case to compare two method
+        if (node_base instanceof MethodDeclaration && node_compare instanceof MethodDeclaration) {
+            detectCopyClassInterfaceConstructorMethod(f1, f2, node_base, node_compare);
+            return;
+        }
+
+        // the case to compare two constructor
+        if (node_base instanceof ConstructorDeclaration && node_compare instanceof ConstructorDeclaration) {
+            detectCopyClassInterfaceConstructorMethod(f1, f2, node_base, node_compare);
             return;
         }
 
         // break if one of node is CID
         if (node_base instanceof ClassOrInterfaceDeclaration
                 || node_compare instanceof ClassOrInterfaceDeclaration) return;
+
+        // break if one of node is Method
+        if (node_base instanceof MethodDeclaration || node_compare instanceof MethodDeclaration)
+            return;
+
+        // break if one of node is Constructor
+        if (node_base instanceof ConstructorDeclaration || node_compare instanceof ConstructorDeclaration)
+            return;
+        // ------------------------------------------------------------------------------------- //
+
 
         // case of package, import, comment, whole class and any one-line code
         for (Node base : node_base.getChildNodes()) {
@@ -89,10 +138,20 @@ public class SimilaryityDecectionModel {
     }
 
 
-    private void detectCopyClassInterface(int i, int j, Node ni, Node nj) {
-
+    /* ************* detect the copy between spacial nodes *********** */
+    private void detectCopyClassInterfaceConstructorMethod(int f1, int f2, Node node_base, Node node_compare) {
+        for (Node ni : node_base.getChildNodes()) {
+            for (Node nj : node_compare.getChildNodes()) {
+                if (node_base instanceof MethodDeclaration && ni instanceof BlockStmt && nj instanceof BlockStmt) {
+                    detectCopyNode(f1, f2, ni, nj);
+                    return;
+                }
+                detectCopyNode(f1, f2, ni, nj);
+            }
+        }
     }
 
+    /* ************* setup running for copy and change variable name *********** */
     private void detectCopy() {
         CompilationUnit tempi, tempj;
         for (int i = 0; i < (this.cuArray.size() - 1); i++) {
@@ -105,6 +164,7 @@ public class SimilaryityDecectionModel {
         }
     }
 
+    /* ************************** Utility Functions ************************ */
     /* get the 2-elements index array of begin line and end line of a node */
     private int[] getRange(Node node) {
         Range r = node.getRange().get();
@@ -118,90 +178,8 @@ public class SimilaryityDecectionModel {
     }
 
 
-    public SimilaryityDecectionModel(ArrayList<String> codeList) throws IOException {
-        /* :codeList: codeList[0] is the path of code files, and the rests store the name of code
-                      files corresponding to their index in database. */
-
-        // parser all java files and store this.cuArray.
-        Path fatherPath = Paths.get(codeList.get(0));
-        for (int i = 1; i < codeList.size(); i++) {
-            this.cuArray.add(StaticJavaParser.parse(fatherPath.resolve(Paths.get(codeList.get(i)))));
-        }
-
-        detectCopy();
-
-        // read file by file
-
-        // compare the 'import' section
-
-        // compare the class variable declaration
-
-        // compare the class constructor
-
-        // compare the
-
-
-//        VoidVisitor<?> methodNameVisitor = new MethodNamePrinter();
-////        methodNameVisitor.visit(cu, null);
-//
-//
-//        List<String> methodNames = new ArrayList<>();
-//        VoidVisitor<List<String>> methodNameCollector = new MethodNameCollector();
-////        methodNameCollector.visit(cu, methodNames);
-//        methodNames.forEach(n -> System.out.println("Method Name Collected: " + n));
-
-
-//        System.out.println();
-//        List<Node> a = cu.getChildNodes();
-//        System.out.println(a.get(0));
-
-
-        // SourceRoot is a tool that read and writes Java files from packages on a certain root directory.
-        // In this case the root directory is found by taking the root from the current Maven module,
-        // with src/main/resources appended.
-//        SourceRoot sourceRoot =
-//                new SourceRoot(CodeGenerationUtils.mavenModuleRoot(SampleInput.class).resolve(path));
-
-        // Our sample is in the root of this directory, so no package name.
-//        CompilationUnit cu = sourceRoot.parse("", "SampleInput.java");
-//        System.out.println();
-//
-//        cu.accept(new ModifierVisitor<Void>() {
-//            /**
-//             * For every if-statement, see if it has a comparison using "!=".
-//             * Change it to "==" and switch the "then" and "else" statements around.
-//             */
-//            @Override
-//            public Visitable visit(IfStmt n, Void arg) {
-//                // Figure out what to get and what to cast simply by looking at the AST in a debugger!
-//                n.getCondition().ifBinaryExpr(
-//                        binaryExpr -> {
-//                            if (binaryExpr.getOperator() == BinaryExpr.Operator.NOT_EQUALS && n.getElseStmt().isPresent()) {
-//                            /* It's a good idea to clone nodes that you move around.
-//                                JavaParser (or you) might get confused about who their parent is!
-//                            */
-//                                Statement thenStmt = n.getThenStmt().clone();
-//                                Statement elseStmt = n.getElseStmt().get().clone();
-//                                n.setThenStmt(elseStmt);
-//                                n.setElseStmt(thenStmt);
-//                                binaryExpr.setOperator(BinaryExpr.Operator.EQUALS);
-//                            }
-//                        });
-//                return super.visit(n, arg);
-//            }
-//        }, null);
-
-        // This saves all the files we just read to an output directory.
-//        sourceRoot.saveAll(
-//                // The path of the Maven module/project which contains the LogicPositivizer class.
-//                CodeGenerationUtils.mavenModuleRoot(SimilaryityDecectionModel.class)
-//                        // appended with a path to "output"
-//                        .resolve(Paths.get(path)));
-
-    }
-
-
-    private void runPythonModel(String command) {
+    // run python service
+    private static void runPythonModel(String command) {
 
         Runtime run = Runtime.getRuntime();
 
@@ -222,19 +200,13 @@ public class SimilaryityDecectionModel {
         }
     }
 
-    // testing
+
+    /* ************************** Testing Main ************************ */
     public static void main(String[] args) throws IOException {
         SimilaryityDecectionModel sdm = new SimilaryityDecectionModel(SampleInput.input);
-        System.out.println();
-        sdm.cuArray.get(0).getChildNodes();
 
-
-//        SampleOutput output = new SampleOutput();
-//        System.out.println(output.similarStructure);
-//        System.out.println(output.changeName);
-//        System.out.println(output.copyHere);
-//
-
+        // print the copy result
+        for (SimilarPiece s: sdm.copyHere) System.out.println(s);
     }
 }
 
