@@ -201,6 +201,7 @@ public class SimilaryityDecectionModel {
     }
 
 
+
     /* ************************** Testing Main ************************ */
     public static void main(String[] args) throws IOException {
         SimilaryityDecectionModel sdm = new SimilaryityDecectionModel(SampleInput.input);
