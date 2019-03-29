@@ -1,4 +1,3 @@
-package huawei001;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,9 +21,6 @@ public class UnZipFile {
 		
 		ZipFile zip = new ZipFile(zipFile,Charset.forName("utf-8")); //Solve garbled problems
 		String name = zip.getName().substring(zip.getName().lastIndexOf('\\')+1, zip.getName().lastIndexOf('.'));
-//		System.out.println("name1 " + name);
-		
-		
 		
 		File pathFile = new File(descDir+name);
 		if (!pathFile.exists()) {
@@ -32,21 +28,14 @@ public class UnZipFile {
 		}
 		
 		dir =  descDir + name;
-//		System.out.println("dir " + descDir + name);
-//		System.out.println("name2 " + descDir + name);
-		
-		
-		
+
 		for (Enumeration<? extends ZipEntry> entries = zip.entries(); entries.hasMoreElements();) {
 			ZipEntry entry = (ZipEntry) entries.nextElement();
 			String zipEntryName = entry.getName();
 			
-			if(zipEntryName.endsWith("java")) {
-//				System.out.println("name3 " + zipEntryName);
-				
+			if(zipEntryName.endsWith("java")) { //only accept .java file
 				InputStream in = zip.getInputStream(entry);
 				String outPath = (descDir + name +"/"+ zipEntryName).replaceAll("\\*", "/");
-//				System.out.println("name out put" + outPath);
 				
 				// Determine if the path exists. If it does not exist, create a file path.
 				File file = new File(outPath.substring(0, outPath.lastIndexOf('/')));
@@ -58,8 +47,7 @@ public class UnZipFile {
 				if (new File(outPath).isDirectory()) {
 					continue;
 				}
-				// print output
-				//System.out.println(outPath);
+
 	 
 				FileOutputStream out = new FileOutputStream(outPath);
 				byte[] buf1 = new byte[1024];
@@ -73,7 +61,7 @@ public class UnZipFile {
 		}
 		
 //		System.out.println("unzip success");
-//		System.out.println(dir);
+
 		return dir;	
 	}
 	
