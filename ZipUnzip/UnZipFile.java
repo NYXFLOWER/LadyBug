@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,9 +12,9 @@ public class UnZipFile {
 	public  static String dir;
 
 
-	public static void unZipFiles(String zipPath, String descDir) throws IOException {
-		unZipFiles(new File(zipPath), descDir);
-	}
+// 	public static void unZipFiles(String zipPath, String descDir) throws IOException {
+// 		unZipFiles(new File(zipPath), descDir);
+// 	}
  	
 	public static String unZipFiles(File zipFile, String descDir) throws IOException {
 		
