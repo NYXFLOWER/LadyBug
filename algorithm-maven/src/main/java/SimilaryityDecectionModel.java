@@ -34,45 +34,52 @@ public class SimilaryityDecectionModel {
 
 
     /* ************************** constructors ************************ */
-    public SimilaryityDecectionModel(ArrayList<String> codeList) throws IOException {
+    public SimilaryityDecectionModel(ArrayList<String> codeList) {
         /* :codeList: codeList[0] is the path of code files, and the rests store the name of code
                       files corresponding to their index in database. */
 
         // parser all java files and store this.cuArray.
         Path fatherPath = Paths.get(codeList.get(0));
         for (int i = 1; i < codeList.size(); i++) {
-            this.cuArray.add(StaticJavaParser.parse(fatherPath.resolve(Paths.get(codeList.get(i)))));
+            try {
+                this.cuArray.add(StaticJavaParser.parse(fatherPath.resolve(Paths.get(codeList.get(i)))));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         detectCopy();
 
+        // print the copy result
+        for (SimilarPiece s: this.copyHere) System.out.println(s);
+
     }
 
     /* ************************** Visitors ************************ */
-    private static class MethodNamePrinter extends VoidVisitorAdapter<Void> {
-        @Override
-        public void visit(MethodDeclaration md, Void arg) {
-            super.visit(md, arg);
-            System.out.println("Method Name Printed: " + md.getName());
-        }
-    }
-
-    private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
-        @Override
-        public void visit(MethodDeclaration md, List<String> collector) {
-            super.visit(md, collector);
-            collector.add(md.getNameAsString());
-        }
-    }
-
-
-    private static class IntegerLiteralModifier extends ModifierVisitor<Void> {
-        @Override
-        public FieldDeclaration visit(FieldDeclaration fd, Void arg) {
-            super.visit(fd, arg);
-            return fd;
-        }
-    }
+//    private static class MethodNamePrinter extends VoidVisitorAdapter<Void> {
+//        @Override
+//        public void visit(MethodDeclaration md, Void arg) {
+//            super.visit(md, arg);
+//            System.out.println("Method Name Printed: " + md.getName());
+//        }
+//    }
+//
+//    private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
+//        @Override
+//        public void visit(MethodDeclaration md, List<String> collector) {
+//            super.visit(md, collector);
+//            collector.add(md.getNameAsString());
+//        }
+//    }
+//
+//
+//    private static class IntegerLiteralModifier extends ModifierVisitor<Void> {
+//        @Override
+//        public FieldDeclaration visit(FieldDeclaration fd, Void arg) {
+//            super.visit(fd, arg);
+//            return fd;
+//        }
+//    }
 
 
     /* ************* detect the copy and change variable name between normal nodes *********** */
@@ -179,36 +186,48 @@ public class SimilaryityDecectionModel {
 
 
     // run python service
-    private static void runPythonModel(String command) {
+//    private static void runPythonModel(String command) {
+//
+//        Runtime run = Runtime.getRuntime();
+//
+//        try {
+//            Process p = run.exec(command);
+//            InputStream in = p.getInputStream();
+//            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+//
+//            StringBuilder sb = new StringBuilder();
+//            String s;
+//            while ((s = br.readLine()) != null) {
+//                sb.append(s);
+//            }
+//
+//            System.out.println(sb);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-        Runtime run = Runtime.getRuntime();
-
-        try {
-            Process p = run.exec(command);
-            InputStream in = p.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
-            StringBuilder sb = new StringBuilder();
-            String s;
-            while ((s = br.readLine()) != null) {
-                sb.append(s);
-            }
-
-            System.out.println(sb);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public ArrayList<SimilarPiece> getCopyHere() {
+        return copyHere;
     }
+
+    public ArrayList<SimilarPiece> getChangeName() {
+        return changeName;
+    }
+
+    public ArrayList<SimilarPiece> getSimilarStructure() {
+        return similarStructure;
+    }
+
+
 
 
 
     /* ************************** Testing Main ************************ */
-    public static void main(String[] args) throws IOException {
-        SimilaryityDecectionModel sdm = new SimilaryityDecectionModel(SampleInput.input);
-
-        // print the copy result
-        for (SimilarPiece s: sdm.copyHere) System.out.println(s);
-    }
+//    public static void main(String[] args) {
+//        SimilaryityDecectionModel sdm = new SimilaryityDecectionModel(SampleInput.input);
+//
+//    }
 }
 
 
