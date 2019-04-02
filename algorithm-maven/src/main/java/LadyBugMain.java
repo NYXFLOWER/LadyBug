@@ -6,8 +6,7 @@ import java.util.zip.ZipOutputStream;
 
 class LadyBugMain {
     /* setting */
-    private static final String destDir = "/Users/nyxfer/Documents/GitHub/ladybug/algorithm-maven" +
-            "/src/main/resources";
+    private static final String destDir = "src/main/resources";
 //    private static final String namePartten = "[Assignment]_[StudentID]_[Attempt]_[Date]_{FileName]";
     private static final String pdfPath = "src/main/resources/pdf_dir";
 
