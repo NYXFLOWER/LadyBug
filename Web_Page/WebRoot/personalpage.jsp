@@ -1,7 +1,8 @@
-<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ page language="java" import="java.util.*,java.sql.*,java.net.*,org.apache.commons.fileupload.*" pageEncoding="UTF-8"%>
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+
 %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -27,22 +28,31 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	<h3>LadyBug</h3>
 </div>
 
+<div id="usernameField">
+	<form action="personalpage.jsp" name="usernameForm" method="get">
+		<%-- <%=request.getParameter("username") %> --%>
+		<%=session.getAttribute("txtUsername") %>
+	</form>
+
+</div>
+
 <div id="personalpage_frame_left">
 
-	<form method="post" action="personalpage.js">
-		<p><label class="label_head1"> Upload </label></p>
+	<form name="uploadForm" method="post" action="Upload" enctype="multipart/form-data">
+		<label class="label_head1"> Upload </label>		
 	<div id="upload_control">
-		<input type="button" id="btn_upload" value="Browse From Computer" onclick="upload()"/>		
+		<input type="file" name="fileup">
+		<input type="submit" id="btn_upload" value="Upload" class="input upload"/>		
 	</div>
 	</form>
 </div>
 
 <div id="personalpage_frame_right">
 
-	<form method="post" action="personalpage.js">
-		<p><label class="label_head2"> Downloadable </label></p>
+	<form name="downloadForm" method="post" action="download">
+		<p><label class="label_head2"> Download </label></p>
 	<div id="upload_control">
-		<input type="button" id="btn_download" value="Download" onclick="download()"/>		
+		<input type="submit" id="btn_download" value="Download" class="input download"/>		
 	</div>
 	</form>
 </div>

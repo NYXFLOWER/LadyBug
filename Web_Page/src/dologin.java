@@ -48,6 +48,7 @@ public class dologin extends HttpServlet {
         // 接收数据
         txtUsername = request.getParameter("txtUsername");
         txtPassword = request.getParameter("txtPassword");
+        
 
 //        // 验证码检测
 //        String txtCheckCode = request.getParameter("txtCheckCode");// 获取输入框中输入的验证码
@@ -83,7 +84,7 @@ public class dologin extends HttpServlet {
                     mypwd = rs.getString(2); // 获得表格的第二列，此处为密码
                     System.out.println("成功从login数据库的users表中获取到用户名和密码：");
                     System.out.println(myuserword + "\t" + mypwd + "\t");// “\t”为“转义字符”,代表的是一个tab，也就是8个空格。
-                    response.sendRedirect("personalpage.jsp");
+                    response.sendRedirect("personalpage.jsp?username="+URLEncoder.encode(txtUsername));
                 } else {
                     System.out.println("没有该用户，请重新输入");
                     response.sendRedirect("login.jsp");

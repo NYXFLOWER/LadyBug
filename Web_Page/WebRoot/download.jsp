@@ -24,11 +24,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   
   <body>
 <h1>down</h1>
-<%//String name=request.getParameter("file_name") ;
-String num=request.getParameter("num");
-Object name=request.getParameter("name");%>
-<a href="download"><%out.print(name); %></a>
-<a href="download"><%out.print(num); %></a>
+<a href="download">download</a>
 
   </body>
 </html>
