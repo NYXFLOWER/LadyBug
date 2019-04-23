@@ -4,12 +4,14 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.VoidType;
-import com.github.javaparser.ast.visitor.ModifierVisitor;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import javassist.compiler.ast.BinExpr;
 
 
 import java.io.*;
@@ -48,11 +50,24 @@ public class SimilaryityDecectionModel {
             }
         }
 
-        detectCopy();
+        // detecting directly-copied and name-changed variables in loop and condition
+        detectCopyChange();
 
         // print the copy result
         for (SimilarPiece s: this.copyHere) System.out.println(s);
 
+    }
+
+    /* ************* setup running for copy and change variable name *********** */
+    private void detectCopyChange() {
+        CompilationUnit tempi, tempj;
+        for (int i = 0; i < (this.cuArray.size() - 1); i++) {
+            for (int j = i + 1; j < this.cuArray.size(); j++) {
+                tempi = this.cuArray.get(i);
+                tempj = this.cuArray.get(j);
+                detectCopyNode(i, j, tempi, tempj);
+            }
+        }
     }
 
     /* ************************** Visitors ************************ */
@@ -96,6 +111,14 @@ public class SimilaryityDecectionModel {
         if (node_base.equals(node_compare)) {
             copyHere.add(new SimilarPiece(f1, f2, getRange(node_base), getRange(node_compare)));
             return;
+        }
+
+        // ----------------------------- If and Switch ---------------------------------- //
+        if (node_base instanceof IfStmt && node_compare instanceof IfStmt
+                || node_base instanceof IfStmt && node_compare instanceof SwitchStmt
+                || node_base instanceof SwitchStmt && node_compare instanceof IfStmt
+                || node_base instanceof SwitchStmt && node_compare instanceof SwitchStmt) {
+            detectIfSwitch(f1, f2, node_base, node_compare);
         }
 
         // break if one of node is one-line code
@@ -145,11 +168,12 @@ public class SimilaryityDecectionModel {
     }
 
 
-    /* ************* detect the copy between spacial nodes *********** */
+    /* ************* detect the similarity between spacial nodes *********** */
     private void detectCopyClassInterfaceConstructorMethod(int f1, int f2, Node node_base, Node node_compare) {
+        // detect directly-copied code
         for (Node ni : node_base.getChildNodes()) {
             for (Node nj : node_compare.getChildNodes()) {
-                if (node_base instanceof MethodDeclaration && ni instanceof BlockStmt && nj instanceof BlockStmt) {
+                if (ni instanceof BlockStmt && nj instanceof BlockStmt) {
                     detectCopyNode(f1, f2, ni, nj);
                     return;
                 }
@@ -158,18 +182,29 @@ public class SimilaryityDecectionModel {
         }
     }
 
-    /* ************* setup running for copy and change variable name *********** */
-    private void detectCopy() {
-        CompilationUnit tempi, tempj;
-        for (int i = 0; i < (this.cuArray.size() - 1); i++) {
-            for (int j = i + 1; j < this.cuArray.size(); j++) {
-                tempi = this.cuArray.get(i);
-                tempj = this.cuArray.get(j);
-                detectCopyNode(i, j, tempi, tempj);
+    private void detectIfSwitch(int f1, int f2, Node node_base, Node node_compare) {
+        ArrayList<String> n1 = new ArrayList<>();
+        ArrayList<Node> l1 = new ArrayList<>();
+        Node temp;
 
+        if (node_base instanceof IfStmt) {
+            List<Node> childs = node_base.getChildNodes();
+            for (Node n: childs) {
+                if (n instanceof BinaryExpr) {
+                    String[] head = childs.get(0).toString().split("==");
+                    if (head.length == 2) {
+                        n1.add(head[head.length-1]);
+                        l1.add(childs.get(0));
+                    } else {
+                        return;
+                    }
+                }
             }
         }
     }
+
+
+
 
     /* ************************** Utility Functions ************************ */
     /* get the 2-elements index array of begin line and end line of a node */
