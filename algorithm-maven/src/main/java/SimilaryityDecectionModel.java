@@ -8,6 +8,7 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.VoidType;
@@ -54,8 +55,8 @@ public class SimilaryityDecectionModel {
         detectCopyChange();
 
         // print the copy result
-        for (SimilarPiece s: this.copyHere) System.out.println(s);
-
+        for (SimilarPiece s: this.copyHere) System.out.println("copy " + s);
+        for (SimilarPiece s: this.similarStructure) System.out.println("structure " + s);
     }
 
     /* ************* setup running for copy and change variable name *********** */
@@ -184,17 +185,46 @@ public class SimilaryityDecectionModel {
 
     private void detectIfSwitch(int f1, int f2, Node node_base, Node node_compare) {
         ArrayList<String> n1 = new ArrayList<>();
-        ArrayList<Node> l1 = new ArrayList<>();
-        Node temp;
+        ArrayList<int[]> l1 = new ArrayList<>();
+        constructConditionalEntry(n1, l1, node_base);
 
+        ArrayList<String> n2 = new ArrayList<>();
+        ArrayList<int[]> l2 = new ArrayList<>();
+        constructConditionalEntry(n2, l2, node_compare);
+
+        for (int i = 0; i < n1.size(); i++) {
+            for (int j = 0; j < n2.size(); j++) {
+                if (n1.get(i).equals(n2.get(j))) {
+                    this.similarStructure.add(new SimilarPiece(f1, f2, l1.get(i), l2.get(j)));
+                }
+            }
+        }
+
+    }
+
+    private void constructConditionalEntry(ArrayList<String> n1, ArrayList<int[]> l1,
+                                           Node node_base) {
+        List<Node> childs = node_base.getChildNodes();
         if (node_base instanceof IfStmt) {
-            List<Node> childs = node_base.getChildNodes();
             for (Node n: childs) {
                 if (n instanceof BinaryExpr) {
-                    String[] head = childs.get(0).toString().split("==");
+                    String[] head = n.toString().split("== ");
                     if (head.length == 2) {
                         n1.add(head[head.length-1]);
-                        l1.add(childs.get(0));
+                        l1.add(getRange(n));
+                    } else {
+                        return;
+                    }
+                }
+            }
+        } else {
+            for (Node n: childs) {
+                if (n instanceof SwitchEntry) {
+                    String[] head = n.toString().split(":");
+                    String[] c = head[0].split(" ");
+                    if (c.length == 2) {
+                        n1.add(c[1]);
+                        l1.add(getRange(n.getChildNodes().get(0)));
                     } else {
                         return;
                     }
