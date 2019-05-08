@@ -2,9 +2,14 @@
 
 Homepage: [LadyBug - Code Similarity Detection Tool](http://142.93.203.80:8080/LadyBug/)
 
-Features Intruduction here
+## Features of our product
 
-！！可以参考这个样例写我们的项目主页和版本变更：-> https://github.com/James-Yu/LaTeX-Workshop
+**Easy to use:** Users only need to simply register and log in, upload the zip file to get the code detection result.
+
+**Efficient:** It takes only 1 second for the user to detect the code repetition of 100 students.
+
+**Functional:** Our product can detect not only the directly-copied code but also some complex similarity situations, i.e. change variable name, change for/while loop, change if/switch condition, methods and etc.
+
 
 # User Guid v-3.0.0
 
